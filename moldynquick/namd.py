@@ -38,7 +38,6 @@ class NAMDLog:
             for line in file.readlines():
                 if line.startswith("ENERGY:"):
                     values = [m for m in [l.strip() for l in line.split(" ")][1:] if len(m) > 0]
-
                     timestep = int(values[0])
 
                     wide_row = {
@@ -48,8 +47,7 @@ class NAMDLog:
                         "dihedral [kcal/mol]": float(values[3]),
                         "improper [kcal/mol]": float(values[4]),
                         "electrostatic [kcal/mol]": float(values[5]),
-                        "VDW [kcal/mol]": float(values[6]),
-                        "temp [K]": float(values[11])
+                        "VDW [kcal/mol]": float(values[6])
                     }
 
                     wide.append(wide_row)
@@ -70,7 +68,6 @@ class NAMDLog:
             The dataframe that contains the rows in tall format.
         """
         tall: List[Dict[str, Any]] = []
-
         wide: pd.DataFrame = self.extract_energies_wide()
 
         for _, wide_row in wide.iterrows():
@@ -85,5 +82,30 @@ class NAMDLog:
                     tall.append(tall_row)
 
         df: pd.DataFrame = pd.DataFrame(tall)
+        return df
 
+    def extract_temperatures(self) -> pd.DataFrame:
+        """
+        Extracts the temperatures
+
+        Returns
+        -------
+        pd.DataFrame
+            The temperatures.
+        """
+        rows: List[Dict[str, Any]] = []
+
+        with open(self.log_filename, "r") as file:
+            for line in file.readlines():
+                if line.startswith("ENERGY:"):
+                    values = [m for m in [l.strip() for l in line.split(" ")][1:] if len(m) > 0]
+                    timestep = int(values[0])
+                    row = {
+                        "timestep": timestep,
+                        "temp [K]": float(values[11]),
+                        "tempavg [K]": float(values[14])
+                    }
+                    rows.append(row)
+
+        df: pd.DataFrame = pd.DataFrame(rows)
         return df
