@@ -136,3 +136,4 @@ dmypy.json
 *.xlsx
 *.csv
 *.conf
+*.psf
