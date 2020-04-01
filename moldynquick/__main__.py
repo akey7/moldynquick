@@ -1,5 +1,8 @@
 from time import time
 from argparse import ArgumentParser
+import pandas as pd
+
+from moldynquick.namd import NAMDLog
 
 
 class App:
@@ -55,6 +58,21 @@ class App:
         self.psf_filename = args.psf if args.psf is not None else "default.psf"
         self.filename_title = args.title if args.title is not None else "default"
 
+    def create_xlsx(self) -> None:
+        """
+        Creates the Excel file.
+        """
+        xlsx_filename: str = f"{self.timestampped_title}.xlsx"
+
+        namd_log: NAMDLog = NAMDLog(self.log_filename)
+
+        print("EXTRACT: Energies from NAMD log file.")
+        energies = namd_log.extract_energies_wide()
+
+        print(f"WRITE: Creating {xlsx_filename}")
+        with pd.ExcelWriter(xlsx_filename) as writer:
+            energies.to_excel(writer, "Energies wide", index=False)
+
     def run(self) -> None:
         """
         This runs the app after presenting the user with the input and output
@@ -65,6 +83,10 @@ class App:
         print(f"PSF: {self.psf_filename}")
         print(f"DCD: {self.dcd_filename}")
         print(f"LOG: {self.log_filename}")
+
+        self.create_xlsx()
+
+        print("DONE")
 
 
 if __name__ == "__main__":

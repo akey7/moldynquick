@@ -20,6 +20,7 @@ setuptools.setup(
         "numpy",
         "pytest",
         "mypy",
-        "mdanalysis"
+        "mdanalysis",
+        "openpyxl"
     ]
 )
