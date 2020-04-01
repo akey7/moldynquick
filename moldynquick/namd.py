@@ -63,6 +63,11 @@ class NAMDLog:
 
         Yes this does cause the log file to be read twice. But fixing that
         will need to wait until another version.
+
+        Returns
+        -------
+        pd.DataFrame
+            The dataframe that contains the rows in tall format.
         """
         tall: List[Dict[str, Any]] = []
 
