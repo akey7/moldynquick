@@ -61,36 +61,23 @@ class NAMDLog:
         """
         Extracts the narrow format of the schema to a Pandas dataframe.
 
-        Yes there is repeated code here. It should be refactored in a later revision.
+        Yes this does cause the log file to be read twice. But fixing that
+        will need to wait until another version.
         """
         tall: List[Dict[str, Any]] = []
 
-        with open(self.log_filename, "r") as file:
-            for line in file.readlines():
-                if line.startswith("ENERGY:"):
-                    values = [m for m in [l.strip() for l in line.split(" ")][1:] if len(m) > 0]
+        wide: pd.DataFrame = self.extract_energies_wide()
 
-                    timestep = int(values[0])
-
-                    wide_row = {
+        for _, wide_row in wide.iterrows():
+            timestep: int = wide_row["timestep"]
+            for key, value in wide_row.items():
+                if key != "timestep":
+                    tall_row = {
                         "timestep": timestep,
-                        "bond [kcal/mol]": float(values[1]),
-                        "angle [kcal/mol]": float(values[2]),
-                        "dihedral [kcal/mol]": float(values[3]),
-                        "improper [kcal/mol]": float(values[4]),
-                        "electrostatic [kcal/mol]": float(values[5]),
-                        "VDW [kcal/mol]": float(values[6]),
-                        "temp [K]": float(values[11])
+                        "measurement": key,
+                        "value": value
                     }
-
-                    for key, value in wide_row.items():
-                        if key != "timestep":
-                            tall_row = {
-                                "timestep": timestep,
-                                "measurement": key,
-                                "value": value
-                            }
-                            tall.append(tall_row)
+                    tall.append(tall_row)
 
         df: pd.DataFrame = pd.DataFrame(tall)
 
