@@ -67,11 +67,14 @@ class App:
         namd_log: NAMDLog = NAMDLog(self.log_filename)
 
         print("EXTRACT: Energies from NAMD log file.")
-        energies = namd_log.extract_energies_wide()
+        energies_wide = namd_log.extract_energies_wide()
+        energies_tall = namd_log.extract_energies_tall()
+
 
         print(f"WRITE: Creating {xlsx_filename}")
         with pd.ExcelWriter(xlsx_filename) as writer:
-            energies.to_excel(writer, "Energies wide", index=False)
+            energies_wide.to_excel(writer, "Energies wide", index=False)
+            energies_tall.to_excel(writer, "Energies tall", index=False)
 
     def run(self) -> None:
         """

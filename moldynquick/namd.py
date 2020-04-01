@@ -56,3 +56,42 @@ class NAMDLog:
 
         df: pd.DataFrame = pd.DataFrame(wide)
         return df
+
+    def extract_energies_tall(self) -> pd.DataFrame:
+        """
+        Extracts the narrow format of the schema to a Pandas dataframe.
+
+        Yes there is repeated code here. It should be refactored in a later revision.
+        """
+        tall: List[Dict[str, Any]] = []
+
+        with open(self.log_filename, "r") as file:
+            for line in file.readlines():
+                if line.startswith("ENERGY:"):
+                    values = [m for m in [l.strip() for l in line.split(" ")][1:] if len(m) > 0]
+
+                    timestep = int(values[0])
+
+                    wide_row = {
+                        "timestep": timestep,
+                        "bond [kcal/mol]": float(values[1]),
+                        "angle [kcal/mol]": float(values[2]),
+                        "dihedral [kcal/mol]": float(values[3]),
+                        "improper [kcal/mol]": float(values[4]),
+                        "electrostatic [kcal/mol]": float(values[5]),
+                        "VDW [kcal/mol]": float(values[6]),
+                        "temp [K]": float(values[11])
+                    }
+
+                    for key, value in wide_row.items():
+                        if key != "timestep":
+                            tall_row = {
+                                "timestep": timestep,
+                                "measurement": key,
+                                "value": value
+                            }
+                            tall.append(tall_row)
+
+        df: pd.DataFrame = pd.DataFrame(tall)
+
+        return df
