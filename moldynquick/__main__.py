@@ -1,13 +1,35 @@
+from time import time
 from argparse import ArgumentParser
 
 
 class App:
     def __init__(self):
+        """
+        This initializes the instance attributes that will hold filenames for
+        input and output, as well as the timestamp
+        """
+        self.timestamp = str(round(time()))
         self.log_filename = None
         self.psf_filename = None
         self.dcd_filename = None
+        self.filename_title = None
+
+    @property
+    def timestampped_title(self) -> str:
+        """
+        Concatenates the title and the timestamp together.
+
+        Returns
+        -------
+        str
+            The timestamped title
+        """
+        return f"{self.filename_title}.{self.timestamp}"
 
     def parse_the_arguments(self) -> None:
+        """
+        This parses the command line arguments into the instance attributes
+        """
         parser: ArgumentParser = ArgumentParser()
 
         parser.add_argument("--log", "-l",
@@ -15,11 +37,15 @@ class App:
                             type=str)
 
         parser.add_argument("--dcd", "-d",
-                            help="The .dcd format trajectory file",
+                            help="The .dcd format trajectory file.",
                             type=str)
 
         parser.add_argument("--psf", "-p",
-                            help="Protein structure file",
+                            help="Protein structure file in .psf format.",
+                            type=str)
+
+        parser.add_argument("--title", "-t",
+                            help="The title for the output files. This will be used with the timestamp to create filenames.",
                             type=str)
 
         args = parser.parse_args()
@@ -27,9 +53,15 @@ class App:
         self.log_filename = args.log if args.log is not None else "default.log"
         self.dcd_filename = args.dcd if args.dcd is not None else "default.dcd"
         self.psf_filename = args.psf if args.psf is not None else "default.psf"
+        self.filename_title = args.title if args.title is not None else "default"
 
     def run(self) -> None:
+        """
+        This runs the app after presenting the user with the input and output
+        titles.
+        """
         self.parse_the_arguments()
+        print(f"Title: {self.timestampped_title}")
         print(f"PSF: {self.psf_filename}")
         print(f"DCD: {self.dcd_filename}")
         print(f"LOG: {self.log_filename}")
