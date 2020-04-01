@@ -127,3 +127,12 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Junk to never commit
+.DS_Store
+.idea/
+*.dcd
+*.log
+*.xlsx
+*.csv
+*.conf
