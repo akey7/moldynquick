@@ -4,6 +4,9 @@ This module extracts data from NAMD formatted files
 
 from typing import List, Dict, Any
 import pandas as pd
+import MDAnalysis as mda
+from MDAnalysis.analysis import align, rms
+import numpy as np
 
 
 class NAMDLog:
@@ -107,5 +110,57 @@ class NAMDLog:
                     }
                     rows.append(row)
 
-        df: pd.DataFrame = pd.DataFrame(rows)
+        df = pd.DataFrame(rows)
+        return df
+
+
+class NAMDTrajectory:
+    """
+    This extracts trajectory information from the .dcd log file.
+    """
+
+    def __init__(self, psf_filename: str, dcd_filename: str):
+        """
+        Instantiates with the right filenames to extract trajectory information
+
+        Parameters
+        ----------
+        psf_filename: str
+            The filename to the PSF file.
+
+        dcd_filename: str
+            The trajectory DCD file.
+        """
+        self.psf_filename = psf_filename
+        self.dcd_filename = dcd_filename
+
+    def rmsd_from_first_frame(self, selected_atoms: str = "name CA") -> pd.DataFrame:
+        """
+        This calculates the RMSD for every frame from the first frame.
+
+        Parameters
+        ----------
+        selected_atoms: str
+            The selection string to use for the atoms being aligned in
+            the trajectory. Defaults to alpha carbons.
+
+        Returns
+        -------
+        pd.DataFrame
+            Dataframe with the columns of frame and RMSD [Å]
+        """
+        mobile = mda.Universe(self.psf_filename, self.dcd_filename)
+        ref = mda.Universe(self.psf_filename, self.dcd_filename)
+
+        # These two lines appear to have no effect, but in reality
+        # they set the positions in the trajectory.
+
+        mobile.trajectory[-1]
+        ref.trajectory[0]
+
+        mobile_ca = mobile.select_atoms(selected_atoms)
+        ref_ca = ref.select_atoms(selected_atoms)
+        aligner = align.AlignTraj(mobile, ref, select=selected_atoms, in_memory=True).run()
+
+        df = pd.DataFrame(data={"frame": np.arange(len(aligner.rmsd)), "RMSD [Å]": aligner.rmsd})
         return df
