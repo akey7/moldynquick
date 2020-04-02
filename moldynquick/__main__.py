@@ -2,7 +2,7 @@ from time import time
 from argparse import ArgumentParser
 import pandas as pd
 
-from moldynquick.namd import NAMDLog
+from moldynquick.namd import NAMDLog, NAMDTrajectory
 
 
 class App:
@@ -65,17 +65,22 @@ class App:
         xlsx_filename: str = f"{self.timestampped_title}.xlsx"
 
         namd_log: NAMDLog = NAMDLog(self.log_filename)
+        namd_trajectory: NAMDTrajectory = NAMDTrajectory(self.psf_filename, self.dcd_filename)
 
         print("EXTRACT: Energies from NAMD log file.")
         energies_wide = namd_log.extract_energies_wide()
         energies_tall = namd_log.extract_energies_tall()
         temperatures = namd_log.extract_temperatures()
 
+        print("Calculating RMSD data from PSF and DCD files")
+        rmsd_from_first = namd_trajectory.rmsd_from_first_frame()
+
         print(f"WRITE: Creating {xlsx_filename}")
         with pd.ExcelWriter(xlsx_filename) as writer:
             energies_wide.to_excel(writer, "Energies wide", index=False)
             energies_tall.to_excel(writer, "Energies tall", index=False)
             temperatures.to_excel(writer, "Temperatures", index=False)
+            rmsd_from_first.to_excel(writer, "RMSD from first", index=False)
 
     def run(self) -> None:
         """

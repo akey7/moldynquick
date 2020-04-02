@@ -1,7 +1,7 @@
 # moldynquick
 mol-DYN-quick is a simple tool to run essential analysis after you run a trajectory with NAMD. Skip Tcl and xmgrace. Use moldynquick! (A bad name, I know. But it was late at night and I needed a name for the repo...)
 
-It is a command line tool aimed primarily and macOS and Windows.
+It is a command line tool aimed primarily and macOS and Linux.
 
 ## Installation
 
@@ -36,6 +36,10 @@ See the command line options!
 ``` 
 python -m moldynquick -h
 ```
+
+## Hints
+
+For the alignment, please see the ["Aligning a trajectory to itself"](https://www.mdanalysis.org/UserGuide/examples/analysis/alignment_and_rms/aligning_trajectory_to_first_frame.html)
 
 ## Citations
 
