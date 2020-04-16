@@ -134,7 +134,7 @@ class NAMDTrajectory:
         self.psf_filename = psf_filename
         self.dcd_filename = dcd_filename
 
-    def rmsd_from_first_frame(self, selected_atoms: str = "name CA") -> pd.DataFrame:
+    def rmsd_from_first_frame(self, selected_atoms: str = "(protein) and name C CA N") -> pd.DataFrame:
         """
         This calculates the RMSD for every frame from the first frame.
 
