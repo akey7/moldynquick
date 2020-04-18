@@ -165,7 +165,7 @@ class NAMDTrajectory:
     This extracts trajectory information from the .dcd log file.
     """
 
-    def __init__(self, psf_filename: str, dcd_filename: str):
+    def __init__(self, psf_filename: str, dcd_filename: str, fs_per_frame: int = 2):
         """
         Instantiates with the right filenames to extract trajectory information
 
@@ -176,9 +176,13 @@ class NAMDTrajectory:
 
         dcd_filename: str
             The trajectory DCD file.
+
+        fs_per_frame: int
+            The femtoseconds per frame.
         """
         self.psf_filename = psf_filename
         self.dcd_filename = dcd_filename
+        self.fs_per_frame = fs_per_frame
 
     def rmsd_from_first_frame(self, selected_atoms: str = "(protein) and name C CA N") -> pd.DataFrame:
         """
@@ -188,7 +192,7 @@ class NAMDTrajectory:
         ----------
         selected_atoms: str
             The selection string to use for the atoms being aligned in
-            the trajectory. Defaults to alpha carbons.
+            the trajectory.
 
         Returns
         -------
@@ -204,9 +208,10 @@ class NAMDTrajectory:
         mobile.trajectory[-1]
         ref.trajectory[0]
 
-        mobile_ca = mobile.select_atoms(selected_atoms)
-        ref_ca = ref.select_atoms(selected_atoms)
         aligner = align.AlignTraj(mobile, ref, select=selected_atoms, in_memory=True).run()
 
-        df = pd.DataFrame(data={"frame": np.arange(len(aligner.rmsd)), "RMSD [Å]": aligner.rmsd})
+        df = pd.DataFrame(data={
+            "frame": np.arange(len(aligner.rmsd)),
+            "time [fs]": np.arange(len(aligner.rmsd)) * self.fs_per_frame,
+            "RMSD [Å]": aligner.rmsd})
         return df
