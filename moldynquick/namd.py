@@ -1,5 +1,9 @@
 """
-This module extracts data from NAMD formatted files
+This module extracts data from NAMD formatted files.
+
+See the following for useful things like units of measurements:
+
+https://www.ks.uiuc.edu/Research/namd/2.9/ug/node12.html
 """
 
 from typing import List, Dict, Any
@@ -14,7 +18,7 @@ class NAMDLog:
     This class extracts data from a NAMD log file.
     """
 
-    def __init__(self, log_filename: str):
+    def __init__(self, log_filename: str, fs_per_frame: int = 2):
         """
         This creates the instance attributes needed to parse the log file.
 
@@ -22,8 +26,12 @@ class NAMDLog:
         ----------
         log_filename: str
             The name of the logfile to extract.
+
+        fs_per_frame: int
+            The number of femtoseconds in a frame.
         """
         self.log_filename = log_filename
+        self.fs_per_frame = fs_per_frame
 
     def extract_energies_wide(self) -> pd.DataFrame:
         """
@@ -41,16 +49,23 @@ class NAMDLog:
             for line in file.readlines():
                 if line.startswith("ENERGY:"):
                     values = [m for m in [l.strip() for l in line.split(" ")][1:] if len(m) > 0]
-                    timestep = int(values[0])
+                    frame = int(values[0])
 
                     wide_row = {
-                        "timestep": timestep,
+                        "frame": frame,
+                        "time [fs]": frame * self.fs_per_frame,
                         "bond [kcal/mol]": float(values[1]),
                         "angle [kcal/mol]": float(values[2]),
                         "dihedral [kcal/mol]": float(values[3]),
                         "improper [kcal/mol]": float(values[4]),
                         "electrostatic [kcal/mol]": float(values[5]),
-                        "VDW [kcal/mol]": float(values[6])
+                        "VDW [kcal/mol]": float(values[6]),
+                        "boundary [kcal/mol]": float(values[7]),
+                        "misc [kcal/mol]": float(values[8]),
+                        "kinetic [kcal/mol]": float(values[9]),
+                        "total [kcal/mol]": float(values[10]),
+                        "potential [kcal/mol]": float(values[12]),
+                        "total3 [kcal/mol]": float(values[13])
                     }
 
                     wide.append(wide_row)
@@ -74,11 +89,11 @@ class NAMDLog:
         wide: pd.DataFrame = self.extract_energies_wide()
 
         for _, wide_row in wide.iterrows():
-            timestep: int = wide_row["timestep"]
+            frame: int = wide_row["frame"]
             for key, value in wide_row.items():
-                if key != "timestep":
+                if key != "frame":
                     tall_row = {
-                        "timestep": timestep,
+                        "frame": frame,
                         "measurement": key,
                         "value": value
                     }
@@ -102,11 +117,42 @@ class NAMDLog:
             for line in file.readlines():
                 if line.startswith("ENERGY:"):
                     values = [m for m in [l.strip() for l in line.split(" ")][1:] if len(m) > 0]
-                    timestep = int(values[0])
+                    frame = int(values[0])
                     row = {
-                        "timestep": timestep,
+                        "frame": frame,
+                        "time [fs]": frame * self.fs_per_frame,
                         "temp [K]": float(values[11]),
                         "tempavg [K]": float(values[14])
+                    }
+                    rows.append(row)
+
+        df = pd.DataFrame(rows)
+        return df
+
+    def extract_pressures(self):
+        """
+        Extracts the pressures
+
+        Returns
+        -------
+        pd.DataFrame
+            The pressures.
+        """
+        rows: List[Dict[str, Any]] = []
+
+        with open(self.log_filename, "r") as file:
+            for line in file.readlines():
+                if line.startswith("ENERGY:"):
+                    values = [m for m in [l.strip() for l in line.split(" ")][1:] if len(m) > 0]
+                    frame = int(values[0])
+                    row = {
+                        "frame": frame,
+                        "time [fs]": frame * self.fs_per_frame,
+                        "pressure [bar]": float(values[15]),
+                        "gpressure [bar]": float(values[16]),
+                        "volume [A^3]": float(values[17]),
+                        "pressavg [bar]": float(values[18]),
+                        "gpressavg [bar]": float(values[19])
                     }
                     rows.append(row)
 

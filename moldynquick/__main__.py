@@ -6,10 +6,11 @@ from moldynquick.namd import NAMDLog, NAMDTrajectory
 
 
 class App:
-    def __init__(self):
+    def __init__(self, fs_per_timestep=2):
         """
         This initializes the instance attributes that will hold filenames for
-        input and output, as well as the timestamp
+        input and output, as well as the timestamp at which this log is being
+        generated.
         """
         self.timestamp = str(round(time()))
         self.log_filename = None
@@ -71,6 +72,7 @@ class App:
         energies_wide = namd_log.extract_energies_wide()
         energies_tall = namd_log.extract_energies_tall()
         temperatures = namd_log.extract_temperatures()
+        pressures = namd_log.extract_pressures()
 
         print("Calculating RMSD data from PSF and DCD files")
         rmsd_from_first = namd_trajectory.rmsd_from_first_frame()
@@ -80,6 +82,7 @@ class App:
             energies_wide.to_excel(writer, "Energies wide", index=False)
             energies_tall.to_excel(writer, "Energies tall", index=False)
             temperatures.to_excel(writer, "Temperatures", index=False)
+            pressures.to_excel(writer, "Pressures", index=False)
             rmsd_from_first.to_excel(writer, "RMSD from first", index=False)
 
     def run(self) -> None:
@@ -88,6 +91,7 @@ class App:
         titles.
         """
         self.parse_the_arguments()
+        print("Assuming 2 fs step timesteps")
         print(f"Title: {self.timestampped_title}")
         print(f"PSF: {self.psf_filename}")
         print(f"DCD: {self.dcd_filename}")
