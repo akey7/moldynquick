@@ -74,8 +74,8 @@ class App:
         temperatures = namd_log.extract_temperatures()
         pressures = namd_log.extract_pressures()
 
-        print("Calculating RMSD data from PSF and DCD files")
-        rmsd_from_first = namd_trajectory.rmsd_from_first_frame()
+        # print("Calculating RMSD data from PSF and DCD files")
+        # rmsd_from_first = namd_trajectory.rmsd_from_first_frame()
 
         print(f"WRITE: Creating {xlsx_filename}")
         with pd.ExcelWriter(xlsx_filename) as writer:
@@ -83,7 +83,7 @@ class App:
             energies_tall.to_excel(writer, "Energies tall", index=False)
             temperatures.to_excel(writer, "Temperatures", index=False)
             pressures.to_excel(writer, "Pressures", index=False)
-            rmsd_from_first.to_excel(writer, "RMSD from first", index=False)
+            # rmsd_from_first.to_excel(writer, "RMSD from first", index=False)
 
     def run(self) -> None:
         """

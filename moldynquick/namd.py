@@ -18,7 +18,7 @@ class NAMDLog:
     This class extracts data from a NAMD log file.
     """
 
-    def __init__(self, log_filename: str, fs_per_frame: int = 2):
+    def __init__(self, log_filename: str, fs_per_timestep: int = 2):
         """
         This creates the instance attributes needed to parse the log file.
 
@@ -31,7 +31,7 @@ class NAMDLog:
             The number of femtoseconds in a frame.
         """
         self.log_filename = log_filename
-        self.fs_per_frame = fs_per_frame
+        self.fs_per_timestep = fs_per_timestep
 
     def extract_energies_wide(self) -> pd.DataFrame:
         """
@@ -49,11 +49,11 @@ class NAMDLog:
             for line in file.readlines():
                 if line.startswith("ENERGY:"):
                     values = [m for m in [l.strip() for l in line.split(" ")][1:] if len(m) > 0]
-                    frame = int(values[0])
+                    timestep = int(values[0])
 
                     wide_row = {
-                        "frame": frame,
-                        "time [fs]": frame * self.fs_per_frame,
+                        "timestep": timestep,
+                        "time [fs]": timestep * self.fs_per_timestep,
                         "bond [kcal/mol]": float(values[1]),
                         "angle [kcal/mol]": float(values[2]),
                         "dihedral [kcal/mol]": float(values[3]),
@@ -89,11 +89,11 @@ class NAMDLog:
         wide: pd.DataFrame = self.extract_energies_wide()
 
         for _, wide_row in wide.iterrows():
-            frame: int = wide_row["frame"]
+            timestep: int = wide_row["timestep"]
             for key, value in wide_row.items():
-                if key != "frame":
+                if key != "timestep":
                     tall_row = {
-                        "frame": frame,
+                        "timestep": timestep,
                         "measurement": key,
                         "value": value
                     }
@@ -117,10 +117,10 @@ class NAMDLog:
             for line in file.readlines():
                 if line.startswith("ENERGY:"):
                     values = [m for m in [l.strip() for l in line.split(" ")][1:] if len(m) > 0]
-                    frame = int(values[0])
+                    timestep = int(values[0])
                     row = {
-                        "frame": frame,
-                        "time [fs]": frame * self.fs_per_frame,
+                        "timestep": timestep,
+                        "time [fs]": timestep * self.fs_per_timestep,
                         "temp [K]": float(values[11]),
                         "tempavg [K]": float(values[14])
                     }
@@ -144,10 +144,10 @@ class NAMDLog:
             for line in file.readlines():
                 if line.startswith("ENERGY:"):
                     values = [m for m in [l.strip() for l in line.split(" ")][1:] if len(m) > 0]
-                    frame = int(values[0])
+                    timestep = int(values[0])
                     row = {
-                        "frame": frame,
-                        "time [fs]": frame * self.fs_per_frame,
+                        "timestep": timestep,
+                        "time [fs]": timestep * self.fs_per_timestep,
                         "pressure [bar]": float(values[15]),
                         "gpressure [bar]": float(values[16]),
                         "volume [A^3]": float(values[17]),
