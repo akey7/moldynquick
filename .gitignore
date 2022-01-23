@@ -139,3 +139,6 @@ dmypy.json
 *.psf
 *.twb
 *.tlf
+validate-moldynquick-with-vmd.1587088252.xlsx
+*.npz
+rmsfit.xtc
